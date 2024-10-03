@@ -1,95 +1,107 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+import { useEffect } from "react";
+import { useState } from "react";
+import Cart from "./compon/Cart";
 
-export default function Home() {
+const Shop = () => {
+  const [skipCount, setSkipcount] = useState(1);
+  const [shop, setShop] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [selected, setSelected] = useState([]);
+  const limit = 12;
+
+  const fetchData = async () => {
+    const jsonData = await fetch(
+      `https://dummyjson.com/products?limit=${limit}&skip=${
+        (skipCount - 1) * limit
+      }`
+    );
+    const data = await jsonData.json();
+    setProducts(data.products);
+  };
+  useEffect(() => {
+    fetchData();
+  }, [skipCount]);
+
+  const sum = () => {
+    setSkipcount(skipCount + 1);
+  };
+  const has = () => {
+    if (skipCount > 1) {
+      return setSkipcount(skipCount - 1);
+    }
+  };
+
+  // const category = async () => {
+  //   const jData = await fetch(
+  //     `https://dummyjson.com/products?category=${baraa}`
+  //   );
+  //   const data = await jData.json();
+  //   setShop(data.products);
+  // };
+  // console.log(baraa);
+
+  // useEffect(() => {
+  //   category();
+  // }, [shop]);
+
+  // const baraaName = () => {
+  //   setShop({ ...products, shop });
+  // };
+
+  const getCategories = async () => {
+    const jsonData = await fetch(
+      `https://dummyjson.com/products/category-list`
+    );
+    const data = await jsonData.json();
+    setCategories(data);
+  };
+
+  useEffect(() => {
+    getCategories();
+  }, []);
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div>
+      <select onChange={(event) => setSelected(event.target.value)}>
+        {categories.map((category, key) => {
+          return (
+            <option key={key} value={category}>
+              {category}
+            </option>
+          );
+        })}
+      </select>
+      <div className="styles">
+        {products.map((item, index) => {
+          if (item.category == selected)
+            return (
+              <Cart
+                title={item.title}
+                thumbnail={item.thumbnail}
+                price={item.price}
+                description={item.description}
+                id={item.id}
+                category={item.category}
+                key={index}
+              />
+            );
+        })}
+      </div>
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          paddingTop: "20px",
+        }}
+      >
+        <button onClick={() => has()}>return</button>
+        <div className="ug">{skipCount}</div>
+        <button onClick={() => sum()}>next</button>
+      </div>
     </div>
   );
-}
+};
+export default Shop;
